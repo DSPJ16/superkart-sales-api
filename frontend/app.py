@@ -3,7 +3,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-# Backend URL — inside Docker network, containers see each other by service name
+# Backend URL inside the Docker network
 BACKEND_URL = os.getenv("BACKEND_URL", "http://backend:7860")
 
 # Same constants used at training time
@@ -14,14 +14,13 @@ PERISHABLES = ["Dairy", "Meat", "Fruits and Vegetables", "Breads",
 
 # Page setup
 st.set_page_config(page_title="SuperKart Sales Prediction",
-                   page_icon="🛒",
                    layout="centered")
 
-st.title("🛒 SuperKart Sales Prediction")
+st.title("SuperKart Sales Prediction")
 st.write("Predicts quarterly sales revenue for a product at a SuperKart store.")
 
 
-# ---------- Single prediction ----------
+# Single prediction
 st.subheader("Single Prediction")
 
 col1, col2 = st.columns(2)
@@ -54,7 +53,7 @@ with col2:
 # When the user clicks Predict
 if st.button("Predict quarterly sales", type="primary"):
 
-    # Do the feature engineering the model expects
+    # feature engineering
     product_id_char = product_id[:2].upper()
     store_age = CURRENT_YEAR - int(store_year)
 
@@ -63,7 +62,7 @@ if st.button("Predict quarterly sales", type="primary"):
     else:
         product_type_category = "Non Perishables"
 
-    # Build the payload
+    # Building the payload
     payload = {
         "Product_Weight": product_weight,
         "Product_Sugar_Content": product_sugar,
@@ -77,7 +76,7 @@ if st.button("Predict quarterly sales", type="primary"):
         "Product_Type_Category": product_type_category
     }
 
-    # Send the request
+    # Sending the request
     try:
         response = requests.post(BACKEND_URL + "/v1/sales", json=payload, timeout=10)
 
@@ -95,7 +94,7 @@ if st.button("Predict quarterly sales", type="primary"):
 st.divider()
 
 
-# ---------- Batch prediction ----------
+# Batch prediction
 st.subheader("Batch Prediction")
 st.caption("Upload a CSV with the ten engineered feature columns.")
 
@@ -104,7 +103,7 @@ uploaded_file = st.file_uploader("CSV file", type=["csv"])
 if uploaded_file is not None:
     if st.button("Predict for batch", type="primary"):
         try:
-            # Send the file to the backend
+            # Sending the file to the backend
             files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "text/csv")}
             response = requests.post(BACKEND_URL + "/v1/salesbatch", files=files, timeout=30)
 
@@ -113,7 +112,7 @@ if uploaded_file is not None:
                 st.write(f"Received predictions for {len(results)} records.")
                 st.dataframe(results)
 
-                # Let the user download the results
+                # Letting the user download the results
                 csv_data = results.to_csv(index=False).encode("utf-8")
                 st.download_button(
                     label="Download predictions as CSV",
